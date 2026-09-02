@@ -120,28 +120,149 @@
 
         var currentRouteLine = null;
 
-        // Recalibrated Hotel Land Coordinates
+        // Highway Access Waypoints
+        var HWY19_NORTH_JUNCTION = [19.9555, -155.8485]; // Resort exit onto Hwy 19 North
+        var HWY19_SOUTH_JUNCTION = [19.9405, -155.8505]; // Resort exit onto Hwy 19 South
+
         var origins = {
             "Fairmont Orchid": [19.9518, -155.8625],
             "Mauna Lani, Auberge": [19.9442, -155.8710]
         };
 
         var destinations = [
-            {name: "Fairmont Orchid", coords: [19.9518, -155.8625], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routePoints: [], gmaps: "https://maps.google.com/?q=Fairmont+Orchid"},
-            {name: "Mauna Lani, Auberge", coords: [19.9442, -155.8710], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routePoints: [], gmaps: "https://maps.google.com/?q=Mauna+Lani+Auberge"},
-            {name: "Anaehoʻomalu Bay (A-Bay)", coords: [19.9150, -155.8893], icon: waterIcon, time: "10 min drive (6.2 mi)", tier: "Tier 1 Core", routePoints: [[19.9320, -155.8650], [19.9150, -155.8893]], path: "Hwy 19 South → Waikōloa Beach Dr", gmaps: "https://maps.google.com/?q=Anaehoomalu+Bay"},
-            {name: "Kawaihae Harbor (South)", coords: [20.0360, -155.8290], icon: shipIcon, time: "15 min drive (9.8 mi)", tier: "Tier 2 Flex", routePoints: [[19.9800, -155.8450], [20.0360, -155.8290]], path: "Hwy 19 North (Queen Kaʻahumanu Hwy)", gmaps: "https://maps.google.com/?q=Kawaihae+Harbor"},
-            {name: "Honokōhau Harbor / Kailua Pier", coords: [19.6708, -156.0245], icon: shipIcon, time: "45–50 min drive (26.5 mi)", tier: "Tier 1 Core", routePoints: [[19.8569, -155.9234], [19.7289, -156.0578], [19.6708, -156.0245]], path: "Hwy 19 South past KOA Airport → Kealakehe Pkwy", gmaps: "https://maps.google.com/?q=Honokohau+Harbor"},
-            {name: "Keauhou Bay (Fair Wind)", coords: [19.5593, -155.9632], icon: waterIcon, time: "65 min drive (35.1 mi)", tier: "Tier 1 Core", routePoints: [[19.8569, -155.9234], [19.6397, -155.9946], [19.5593, -155.9632]], path: "Hwy 19 South → Kuakini Hwy → Kamehameha III Rd", gmaps: "https://maps.google.com/?q=Keauhou+Bay"},
-            {name: "Kona Sea Salt & Seahorse Farm", coords: [19.7289, -156.0578], icon: landIcon, time: "30 min drive (20.1 mi)", tier: "Tier 1 Core", routePoints: [[19.8569, -155.9234], [19.7289, -156.0578]], path: "Hwy 19 South → Makako Bay Dr (NELHA)", gmaps: "https://maps.google.com/?q=Kona+Sea+Salt"},
-            {name: "Kailua-Kona Town / Huliheʻe Palace", coords: [19.6397, -155.9946], icon: cityIcon, time: "45–50 min drive (28.4 mi)", tier: "Tier 1 Core", routePoints: [[19.8569, -155.9234], [19.6397, -155.9946]], path: "Hwy 19 South → Palani Rd → Aliʻi Dr", gmaps: "https://maps.google.com/?q=Hulihee+Palace"},
-            {name: "Waimea / Anna Ranch", coords: [20.0225, -155.6664], icon: treeIcon, time: "25–30 min drive (18.5 mi)", tier: "Tier 2 Flex", routePoints: [[20.0360, -155.8290], [20.0225, -155.6664]], path: "Hwy 19 North → Kawaihae Rd (Hwy 19 Mauka)", gmaps: "https://maps.google.com/?q=Anna+Ranch+Heritage+Center"},
-            {name: "Hāmākua / Hawaiian Vanilla Co.", coords: [20.0465, -155.3725], icon: landIcon, time: "65–70 min drive (42.0 mi)", tier: "Boutique", routePoints: [[20.0225, -155.6664], [20.0150, -155.4050], [20.0465, -155.3725]], path: "Hwy 19 North → Waimea → Hwy 19 East", gmaps: "https://maps.google.com/?q=Hawaiian+Vanilla+Company"},
-            {name: "Kahua Ranch", coords: [20.1265, -155.7876], icon: adventureIcon, time: "40–45 min drive (24.2 mi)", tier: "Tier 1 Core", routePoints: [[20.0360, -155.8290], [20.1265, -155.7876]], path: "Hwy 19 North → Kawaihae → Kohala Mtn Rd (Hwy 250)", gmaps: "https://maps.google.com/?q=Kahua+Ranch"},
-            {name: "North Kohala Adventure Hub", coords: [20.2405, -155.8340], icon: adventureIcon, time: "50 min drive (32.1 mi)", tier: "Tier 2 Flex", routePoints: [[20.0360, -155.8290], [20.1265, -155.7876], [20.2405, -155.8340]], path: "Hwy 19 North → Akoni Pule Hwy (Hwy 270)", gmaps: "https://maps.google.com/?q=Hawi+Hawaii"},
-            {name: "Waikōloa Dry Forest", coords: [19.9360, -155.7925], icon: csrIcon, time: "20–25 min drive (12.4 mi)", tier: "Tier 1 Core", routePoints: [[19.9320, -155.8650], [19.9360, -155.7925]], path: "Hwy 19 South → Waikōloa Rd Mauka", gmaps: "https://maps.google.com/?q=Waikoloa+Dry+Forest+Initiative"},
-            {name: "Kīholo Bay / Fishpond", coords: [19.8569, -155.9234], icon: csrIcon, time: "15–20 min drive (11.8 mi)", tier: "Tier 1 Core", routePoints: [[19.8569, -155.9234]], path: "Hwy 19 South → Kīholo Bay 4WD Turnoff", gmaps: "https://maps.google.com/?q=Kiholo+Bay"},
-            {name: "Hawaiian Legacy Reforestation", coords: [20.0150, -155.4050], icon: csrIcon, time: "65 min drive (38.5 mi)", tier: "Tier 2 Flex", routePoints: [[20.0225, -155.6664], [20.0150, -155.4050]], path: "Hwy 19 North → Waimea → Hwy 19 East", gmaps: "https://maps.google.com/?q=Hawaiian+Legacy+Reforestation+Initiative"}
+            {name: "Fairmont Orchid", coords: [19.9518, -155.8625], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routeWaypoints: [], gmaps: "https://maps.google.com/?q=Fairmont+Orchid"},
+            {name: "Mauna Lani, Auberge", coords: [19.9442, -155.8710], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routeWaypoints: [], gmaps: "https://maps.google.com/?q=Mauna+Lani+Auberge"},
+            
+            {
+                name: "Anaehoʻomalu Bay (A-Bay)", 
+                coords: [19.9150, -155.8893], 
+                icon: waterIcon, 
+                time: "10 min drive (6.2 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.9168, -155.8672], [19.9135, -155.8805], [19.9150, -155.8893]], 
+                path: "Hwy 19 South → Waikōloa Beach Dr", 
+                gmaps: "https://maps.google.com/?q=Anaehoomalu+Bay"
+            },
+            {
+                name: "Kawaihae Harbor (South)", 
+                coords: [20.0360, -155.8290], 
+                icon: shipIcon, 
+                time: "15 min drive (9.8 mi)", 
+                tier: "Tier 2 Flex", 
+                routeWaypoints: [HWY19_NORTH_JUNCTION, [19.9880, -155.8410], [20.0150, -155.8340], [20.0360, -155.8290]], 
+                path: "Hwy 19 North (Queen Kaʻahumanu Hwy)", 
+                gmaps: "https://maps.google.com/?q=Kawaihae+Harbor"
+            },
+            {
+                name: "Honokōhau Harbor / Kailua Pier", 
+                coords: [19.6708, -156.0245], 
+                icon: shipIcon, 
+                time: "45–50 min drive (26.5 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.8569, -155.9234], [19.7420, -156.0180], [19.7020, -156.0390], [19.6708, -156.0245]], 
+                path: "Hwy 19 South past KOA Airport → Kealakehe Pkwy", 
+                gmaps: "https://maps.google.com/?q=Honokohau+Harbor"
+            },
+            {
+                name: "Keauhou Bay (Fair Wind)", 
+                coords: [19.5593, -155.9632], 
+                icon: waterIcon, 
+                time: "65 min drive (35.1 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.8569, -155.9234], [19.7020, -156.0390], [19.6397, -155.9946], [19.5850, -155.9680], [19.5593, -155.9632]], 
+                path: "Hwy 19 South → Kuakini Hwy → Kamehameha III Rd", 
+                gmaps: "https://maps.google.com/?q=Keauhou+Bay"
+            },
+            {
+                name: "Kona Sea Salt & Seahorse Farm", 
+                coords: [19.7289, -156.0578], 
+                icon: landIcon, 
+                time: "30 min drive (20.1 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.8569, -155.9234], [19.7420, -156.0180], [19.7289, -156.0578]], 
+                path: "Hwy 19 South → Makako Bay Dr (NELHA)", 
+                gmaps: "https://maps.google.com/?q=Kona+Sea+Salt"
+            },
+            {
+                name: "Kailua-Kona Town / Huliheʻe Palace", 
+                coords: [19.6397, -155.9946], 
+                icon: cityIcon, 
+                time: "45–50 min drive (28.4 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.8569, -155.9234], [19.7020, -156.0390], [19.6480, -156.0010], [19.6397, -155.9946]], 
+                path: "Hwy 19 South → Palani Rd → Aliʻi Dr", 
+                gmaps: "https://maps.google.com/?q=Hulihee+Palace"
+            },
+            {
+                name: "Waimea / Anna Ranch", 
+                coords: [20.0225, -155.6664], 
+                icon: treeIcon, 
+                time: "25–30 min drive (18.5 mi)", 
+                tier: "Tier 2 Flex", 
+                routeWaypoints: [HWY19_NORTH_JUNCTION, [20.0360, -155.8290], [20.0190, -155.7480], [20.0225, -155.6664]], 
+                path: "Hwy 19 North → Kawaihae Rd (Hwy 19 Mauka)", 
+                gmaps: "https://maps.google.com/?q=Anna+Ranch+Heritage+Center"
+            },
+            {
+                name: "Hāmākua / Hawaiian Vanilla Co.", 
+                coords: [20.0465, -155.3725], 
+                icon: landIcon, 
+                time: "65–70 min drive (42.0 mi)", 
+                tier: "Boutique", 
+                routeWaypoints: [HWY19_NORTH_JUNCTION, [20.0360, -155.8290], [20.0225, -155.6664], [20.0150, -155.4850], [20.0465, -155.3725]], 
+                path: "Hwy 19 North → Waimea → Hwy 19 East", 
+                gmaps: "https://maps.google.com/?q=Hawaiian+Vanilla+Company"
+            },
+            {
+                name: "Kahua Ranch", 
+                coords: [20.1265, -155.7876], 
+                icon: adventureIcon, 
+                time: "40–45 min drive (24.2 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_NORTH_JUNCTION, [20.0360, -155.8290], [20.0750, -155.8150], [20.1265, -155.7876]], 
+                path: "Hwy 19 North → Kawaihae → Kohala Mtn Rd (Hwy 250)", 
+                gmaps: "https://maps.google.com/?q=Kahua+Ranch"
+            },
+            {
+                name: "North Kohala Adventure Hub", 
+                coords: [20.2405, -155.8340], 
+                icon: adventureIcon, 
+                time: "50 min drive (32.1 mi)", 
+                tier: "Tier 2 Flex", 
+                routeWaypoints: [HWY19_NORTH_JUNCTION, [20.0360, -155.8290], [20.1265, -155.7876], [20.2405, -155.8340]], 
+                path: "Hwy 19 North → Akoni Pule Hwy (Hwy 270)", 
+                gmaps: "https://maps.google.com/?q=Hawi+Hawaii"
+            },
+            {
+                name: "Waikōloa Dry Forest", 
+                coords: [19.9360, -155.7925], 
+                icon: csrIcon, 
+                time: "20–25 min drive (12.4 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.9320, -155.8450], [19.9360, -155.7925]], 
+                path: "Hwy 19 South → Waikōloa Rd Mauka", 
+                gmaps: "https://maps.google.com/?q=Waikoloa+Dry+Forest+Initiative"
+            },
+            {
+                name: "Kīholo Bay / Fishpond", 
+                coords: [19.8569, -155.9234], 
+                icon: csrIcon, 
+                time: "15–20 min drive (11.8 mi)", 
+                tier: "Tier 1 Core", 
+                routeWaypoints: [HWY19_SOUTH_JUNCTION, [19.8850, -155.8850], [19.8569, -155.9234]], 
+                path: "Hwy 19 South → Kīholo Bay 4WD Turnoff", 
+                gmaps: "https://maps.google.com/?q=Kiholo+Bay"
+            },
+            {
+                name: "Hawaiian Legacy Reforestation", 
+                coords: [20.0150, -155.4050], 
+                icon: csrIcon, 
+                time: "65 min drive (38.5 mi)", 
+                tier: "Tier 2 Flex", 
+                routeWaypoints: [HWY19_NORTH_JUNCTION, [20.0360, -155.8290], [20.0225, -155.6664], [20.0150, -155.4050]], 
+                path: "Hwy 19 North → Waimea → Hwy 19 East", 
+                gmaps: "https://maps.google.com/?q=Hawaiian+Legacy+Reforestation+Initiative"
+            }
         ];
 
         // Populate Destination Dropdown
@@ -174,10 +295,8 @@
 
             if (!target) return;
 
-            // Clear previous route
             if (currentRouteLine) map.removeLayer(currentRouteLine);
 
-            // Handle Same Location or Hotel-to-Hotel
             if (startName === endName) {
                 document.getElementById("cardTitle").textContent = target.name;
                 document.getElementById("cardSub").textContent = "Start & End locations are identical";
@@ -189,9 +308,8 @@
                 return;
             }
 
-            var fullPath = [startCoords].concat(target.routePoints);
+            var fullPath = [startCoords].concat(target.routeWaypoints);
 
-            // Draw Route
             currentRouteLine = L.polyline(fullPath, {
                 color: '#2980b9',
                 weight: 5,
@@ -199,10 +317,8 @@
                 dashArray: '8, 8'
             }).addTo(map);
 
-            // Zoom map to fit route
             map.fitBounds(currentRouteLine.getBounds(), {padding: [50, 50]});
 
-            // Update Info Card
             document.getElementById("cardTitle").textContent = target.name;
             document.getElementById("cardSub").textContent = "From: " + startName + " | " + target.tier;
             document.getElementById("cardTime").textContent = "⏱ " + target.time;
