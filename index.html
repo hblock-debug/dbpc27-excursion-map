@@ -120,14 +120,15 @@
 
         var currentRouteLine = null;
 
+        // Recalibrated Hotel Land Coordinates
         var origins = {
-            "Fairmont Orchid": [19.9576, -155.8643],
-            "Mauna Lani, Auberge": [19.9489, -155.8703]
+            "Fairmont Orchid": [19.9518, -155.8625],
+            "Mauna Lani, Auberge": [19.9442, -155.8710]
         };
 
         var destinations = [
-            {name: "Fairmont Orchid", coords: [19.9576, -155.8643], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routePoints: [], gmaps: "https://maps.google.com/?q=Fairmont+Orchid"},
-            {name: "Mauna Lani, Auberge", coords: [19.9489, -155.8703], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routePoints: [], gmaps: "https://maps.google.com/?q=Mauna+Lani+Auberge"},
+            {name: "Fairmont Orchid", coords: [19.9518, -155.8625], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routePoints: [], gmaps: "https://maps.google.com/?q=Fairmont+Orchid"},
+            {name: "Mauna Lani, Auberge", coords: [19.9442, -155.8710], icon: hotelIcon, time: "Origin Point (0 min)", tier: "Host Hotel", routePoints: [], gmaps: "https://maps.google.com/?q=Mauna+Lani+Auberge"},
             {name: "Anaehoʻomalu Bay (A-Bay)", coords: [19.9150, -155.8893], icon: waterIcon, time: "10 min drive (6.2 mi)", tier: "Tier 1 Core", routePoints: [[19.9320, -155.8650], [19.9150, -155.8893]], path: "Hwy 19 South → Waikōloa Beach Dr", gmaps: "https://maps.google.com/?q=Anaehoomalu+Bay"},
             {name: "Kawaihae Harbor (South)", coords: [20.0360, -155.8290], icon: shipIcon, time: "15 min drive (9.8 mi)", tier: "Tier 2 Flex", routePoints: [[19.9800, -155.8450], [20.0360, -155.8290]], path: "Hwy 19 North (Queen Kaʻahumanu Hwy)", gmaps: "https://maps.google.com/?q=Kawaihae+Harbor"},
             {name: "Honokōhau Harbor / Kailua Pier", coords: [19.6708, -156.0245], icon: shipIcon, time: "45–50 min drive (26.5 mi)", tier: "Tier 1 Core", routePoints: [[19.8569, -155.9234], [19.7289, -156.0578], [19.6708, -156.0245]], path: "Hwy 19 South past KOA Airport → Kealakehe Pkwy", gmaps: "https://maps.google.com/?q=Honokohau+Harbor"},
