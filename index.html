@@ -1,273 +1,69 @@
-import folium
-from folium import Element
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <style>
+        html, body {width: 100%; height: 100%; margin: 0; padding: 0;}
+        #map {position: absolute; top: 0; bottom: 0; right: 0; left: 0;}
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map').setView([19.8900, -155.7800], 10);
 
-# Base Coordinates centered between Mauna Lani & South Kohala Coast
-MAP_CENTER = [19.8900, -155.7800]
-ZOOM_START = 10
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-# Initialize Folium Map (Using OpenStreetMap to avoid API key watermarks)
-m = folium.Map(
-    location=MAP_CENTER,
-    zoom_start=ZOOM_START,
-    tiles="OpenStreetMap",
-    control_scale=True,
-)
+        var hotelIcon = L.AwesomeMarkers.icon({icon: 'hotel', prefix: 'fa', markerColor: 'red'});
+        var waterIcon = L.AwesomeMarkers.icon({icon: 'anchor', prefix: 'fa', markerColor: 'blue'});
+        var shipIcon = L.AwesomeMarkers.icon({icon: 'ship', prefix: 'fa', markerColor: 'blue'});
+        var landIcon = L.AwesomeMarkers.icon({icon: 'leaf', prefix: 'fa', markerColor: 'green'});
+        var cityIcon = L.AwesomeMarkers.icon({icon: 'landmark', prefix: 'fa', markerColor: 'green'});
+        var treeIcon = L.AwesomeMarkers.icon({icon: 'tree', prefix: 'fa', markerColor: 'green'});
+        var adventureIcon = L.AwesomeMarkers.icon({icon: 'compass', prefix: 'fa', markerColor: 'purple'});
+        var csrIcon = L.AwesomeMarkers.icon({icon: 'heart', prefix: 'fa', markerColor: 'orange'});
 
-# Host Hotels Origin Point
-HOTEL_COORDS = [19.9532, -155.8673]  # Central Mauna Lani / Fairmont Hub
+        var destinations = [
+            {name: "Fairmont Orchid", coords: [19.9576, -155.8643], icon: hotelIcon, time: "Origin Point (0 min)", route: None},
+            {name: "Mauna Lani, Auberge", coords: [19.9489, -155.8703], icon: hotelIcon, time: "Origin Point (0 min)", route: None},
+            {name: "Anaehoʻomalu Bay (A-Bay)", coords: [19.9150, -155.8893], icon: waterIcon, time: "10 min drive (6.2 mi)", route: [[19.9532, -155.8673], [19.9320, -155.8650], [19.9150, -155.8893]], path: "Route: Hwy 19 South → Waikōloa Beach Dr"},
+            {name: "Kawaihae Harbor (South)", coords: [20.0360, -155.8290], icon: shipIcon, time: "15 min drive (9.8 mi)", route: [[19.9532, -155.8673], [19.9800, -155.8450], [20.0360, -155.8290]], path: "Route: Hwy 19 North (Queen Kaʻahumanu Hwy)"},
+            {name: "Honokōhau Harbor / Kailua Pier", coords: [19.6708, -156.0245], icon: shipIcon, time: "45–50 min drive (26.5 mi)", route: [[19.9532, -155.8673], [19.8569, -155.9234], [19.7289, -156.0578], [19.6708, -156.0245]], path: "Route: Hwy 19 South past KOA Airport → Kealakehe Pkwy"},
+            {name: "Keauhou Bay (Fair Wind)", coords: [19.5593, -155.9632], icon: waterIcon, time: "65 min drive (35.1 mi)", route: [[19.9532, -155.8673], [19.8569, -155.9234], [19.6397, -155.9946], [19.5593, -155.9632]], path: "Route: Hwy 19 South → Kuakini Hwy → Kamehameha III Rd"},
+            {name: "Kona Sea Salt & Seahorse Farm", coords: [19.7289, -156.0578], icon: landIcon, time: "30 min drive (20.1 mi)", route: [[19.9532, -155.8673], [19.8569, -155.9234], [19.7289, -156.0578]], path: "Route: Hwy 19 South → Makako Bay Dr (NELHA)"},
+            {name: "Kailua-Kona Town / Huliheʻe Palace", coords: [19.6397, -155.9946], icon: cityIcon, time: "45–50 min drive (28.4 mi)", route: [[19.9532, -155.8673], [19.8569, -155.9234], [19.6397, -155.9946]], path: "Route: Hwy 19 South → Palani Rd → Aliʻi Dr"},
+            {name: "Waimea / Anna Ranch", coords: [20.0225, -155.6664], icon: treeIcon, time: "25–30 min drive (18.5 mi)", route: [[19.9532, -155.8673], [20.0360, -155.8290], [20.0225, -155.6664]], path: "Route: Hwy 19 North → Kawaihae Rd (Hwy 19 Mauka)"},
+            {name: "Hāmākua / Hawaiian Vanilla Co.", coords: [20.0465, -155.3725], icon: landIcon, time: "65–70 min drive (42.0 mi)", route: [[19.9532, -155.8673], [20.0225, -155.6664], [20.0150, -155.4050], [20.0465, -155.3725]], path: "Route: Hwy 19 North → Waimea → Hwy 19 East"},
+            {name: "Kahua Ranch", coords: [20.1265, -155.7876], icon: adventureIcon, time: "40–45 min drive (24.2 mi)", route: [[19.9532, -155.8673], [20.0360, -155.8290], [20.1265, -155.7876]], path: "Route: Hwy 19 North → Kawaihae → Kohala Mtn Rd (Hwy 250)"},
+            {name: "North Kohala Adventure Hub", coords: [20.2405, -155.8340], icon: adventureIcon, time: "50 min drive (32.1 mi)", route: [[19.9532, -155.8673], [20.0360, -155.8290], [20.1265, -155.7876], [20.2405, -155.8340]], path: "Route: Hwy 19 North → Akoni Pule Hwy (Hwy 270)"},
+            {name: "Waikōloa Dry Forest", coords: [19.9360, -155.7925], icon: csrIcon, time: "20–25 min drive (12.4 mi)", route: [[19.9532, -155.8673], [19.9320, -155.8650], [19.9360, -155.7925]], path: "Route: Hwy 19 South → Waikōloa Rd Mauka"},
+            {name: "Kīholo Bay / Fishpond", coords: [19.8569, -155.9234], icon: csrIcon, time: "15–20 min drive (11.8 mi)", route: [[19.9532, -155.8673], [19.8569, -155.9234]], path: "Route: Hwy 19 South → Kīholo Bay 4WD Turnoff"},
+            {name: "Hawaiian Legacy Reforestation", coords: [20.0150, -155.4050], icon: csrIcon, time: "65 min drive (38.5 mi)", route: [[19.9532, -155.8673], [20.0225, -155.6664], [20.0150, -155.4050]], path: "Route: Hwy 19 North → Waimea → Hwy 19 East"}
+        ];
 
-# Spatial Dataset: Incentive Program Destinations
-destinations = [
-    # 1. HOST HOTELS (Red)
-    {
-        "name": "Fairmont Orchid",
-        "category": "Host Hotel",
-        "coords": [19.9576, -155.8643],
-        "drive_time": "Origin Point (0 min)",
-        "color": "red",
-        "icon": "hotel",
-        "route_path": None,
-    },
-    {
-        "name": "Mauna Lani, Auberge Resorts Collection",
-        "category": "Host Hotel",
-        "coords": [19.9489, -155.8703],
-        "drive_time": "Origin Point (0 min)",
-        "color": "red",
-        "icon": "hotel",
-        "route_path": None,
-    },
-    # 2. WATER EXCURSIONS & HARBORS (Blue)
-    {
-        "name": "Anaehoʻomalu Bay (A-Bay)",
-        "category": "Water Excursion",
-        "coords": [19.9150, -155.8893],
-        "drive_time": "10 min drive (6.2 mi)",
-        "route_info": "Route: Hwy 19 South → Waikōloa Beach Dr",
-        "color": "blue",
-        "icon": "anchor",
-        "route_path": [HOTEL_COORDS, [19.9320, -155.8650], [19.9150, -155.8893]],
-    },
-    {
-        "name": "Kawaihae Harbor (South)",
-        "category": "Water Excursion",
-        "coords": [20.0360, -155.8290],
-        "drive_time": "15 min drive (9.8 mi)",
-        "route_info": "Route: Hwy 19 North (Queen Kaʻahumanu Hwy)",
-        "color": "blue",
-        "icon": "ship",
-        "route_path": [HOTEL_COORDS, [19.9800, -155.8450], [20.0360, -155.8290]],
-    },
-    {
-        "name": "Honokōhau Harbor / Kailua Pier",
-        "category": "Water Excursion",
-        "coords": [19.6708, -156.0245],
-        "drive_time": "45–50 min drive (26.5 mi)",
-        "route_info": "Route: Hwy 19 South past KOA Airport → Kealakehe Pkwy",
-        "color": "blue",
-        "icon": "ship",
-        "route_path": [
-            HOTEL_COORDS,
-            [19.8569, -155.9234],
-            [19.7289, -156.0578],
-            [19.6708, -156.0245],
-        ],
-    },
-    {
-        "name": "Keauhou Bay (Fair Wind Cruises)",
-        "category": "Water Excursion",
-        "coords": [19.5593, -155.9632],
-        "drive_time": "65 min drive (35.1 mi)",
-        "route_info": "Route: Hwy 19 South → Kuakini Hwy → Kamehameha III Rd",
-        "color": "blue",
-        "icon": "life-ring",
-        "route_path": [
-            HOTEL_COORDS,
-            [19.8569, -155.9234],
-            [19.6397, -155.9946],
-            [19.5593, -155.9632],
-        ],
-    },
-    # 3. LAND & CULTURAL EXCURSIONS (Green)
-    {
-        "name": "Kona Sea Salt & Ocean Rider Seahorse Farm",
-        "category": "Land Excursion",
-        "coords": [19.7289, -156.0578],
-        "drive_time": "30 min drive (20.1 mi)",
-        "route_info": "Route: Hwy 19 South → Makako Bay Dr (NELHA)",
-        "color": "green",
-        "icon": "leaf",
-        "route_path": [HOTEL_COORDS, [19.8569, -155.9234], [19.7289, -156.0578]],
-    },
-    {
-        "name": "Kailua-Kona Town / Huliheʻe Palace / Aliʻi Dr",
-        "category": "Land Excursion",
-        "coords": [19.6397, -155.9946],
-        "drive_time": "45–50 min drive (28.4 mi)",
-        "route_info": "Route: Hwy 19 South → Palani Rd → Aliʻi Dr",
-        "color": "green",
-        "icon": "landmark",
-        "route_path": [HOTEL_COORDS, [19.8569, -155.9234], [19.6397, -155.9946]],
-    },
-    {
-        "name": "Waimea / Anna Ranch / Parker Ranch",
-        "category": "Land Excursion",
-        "coords": [20.0225, -155.6664],
-        "drive_time": "25–30 min drive (18.5 mi)",
-        "route_info": "Route: Hwy 19 North → Kawaihae Rd (Hwy 19 Mauka)",
-        "color": "green",
-        "icon": "tree",
-        "route_path": [HOTEL_COORDS, [20.0360, -155.8290], [20.0225, -155.6664]],
-    },
-    {
-        "name": "Hāmākua / Hawaiian Vanilla Company",
-        "category": "Land Excursion",
-        "coords": [20.0465, -155.3725],
-        "drive_time": "65–70 min drive (42.0 mi)",
-        "route_info": "Route: Hwy 19 North → Waimea → Hwy 19 East (Hāmākua Coast)",
-        "color": "green",
-        "icon": "seedling",
-        "route_path": [
-            HOTEL_COORDS,
-            [20.0225, -155.6664],
-            [20.0150, -155.4050],
-            [20.0465, -155.3725],
-        ],
-    },
-    # 4. ADVENTURE EXCURSIONS (Purple)
-    {
-        "name": "Kahua Ranch",
-        "category": "Adventure Excursion",
-        "coords": [20.1265, -155.7876],
-        "drive_time": "40–45 min drive (24.2 mi)",
-        "route_info": "Route: Hwy 19 North → Kawaihae → Kohala Mtn Rd (Hwy 250)",
-        "color": "purple",
-        "icon": "compass",
-        "route_path": [HOTEL_COORDS, [20.0360, -155.8290], [20.1265, -155.7876]],
-    },
-    {
-        "name": "North Kohala Adventure Hub (Hāwī)",
-        "category": "Adventure Excursion",
-        "coords": [20.2405, -155.8340],
-        "drive_time": "50 min drive (32.1 mi)",
-        "route_info": "Route: Hwy 19 North → Akoni Pule Hwy (Hwy 270)",
-        "color": "purple",
-        "icon": "bicycle",
-        "route_path": [
-            HOTEL_COORDS,
-            [20.0360, -155.8290],
-            [20.1265, -155.7876],
-            [20.2405, -155.8340],
-        ],
-    },
-    # 5. CSR / GIVE-BACK SITES (Orange)
-    {
-        "name": "Waikōloa Dry Forest Initiative",
-        "category": "CSR / Give-Back",
-        "coords": [19.9360, -155.7925],
-        "drive_time": "20–25 min drive (12.4 mi)",
-        "route_info": "Route: Hwy 19 South → Waikōloa Rd Mauka",
-        "color": "orange",
-        "icon": "heart",
-        "route_path": [HOTEL_COORDS, [19.9320, -155.8650], [19.9360, -155.7925]],
-    },
-    {
-        "name": "Kīholo Bay / Kīholo Fishpond",
-        "category": "CSR / Give-Back",
-        "coords": [19.8569, -155.9234],
-        "drive_time": "15–20 min drive (11.8 mi)",
-        "route_info": "Route: Hwy 19 South → Kīholo Bay 4WD Turnoff",
-        "color": "orange",
-        "icon": "handshake",
-        "route_path": [HOTEL_COORDS, [19.8569, -155.9234]],
-    },
-    {
-        "name": "Hawaiian Legacy Reforestation Initiative",
-        "category": "CSR / Give-Back",
-        "coords": [20.0150, -155.4050],
-        "drive_time": "65 min drive (38.5 mi)",
-        "route_info": "Route: Hwy 19 North → Waimea → Hwy 19 East",
-        "color": "orange",
-        "icon": "globe",
-        "route_path": [HOTEL_COORDS, [20.0225, -155.6664], [20.0150, -155.4050]],
-    },
-]
+        destinations.forEach(function(item) {
+            var popupContent = "<b>" + item.name + "</b><br>⏱ " + item.time;
+            if (item.path) popupContent += "<br>🗺️ " + item.path;
 
-# Create FeatureGroups for categorized layer toggling
-categories = {
-    "Host Hotel": folium.FeatureGroup(name="Host Hotels (Red)"),
-    "Water Excursion": folium.FeatureGroup(name="Water & Harbors (Blue)"),
-    "Land Excursion": folium.FeatureGroup(name="Land & Culture (Green)"),
-    "Adventure Excursion": folium.FeatureGroup(name="Adventure (Purple)"),
-    "CSR / Give-Back": folium.FeatureGroup(name="CSR / Community (Orange)"),
-}
+            L.marker(item.coords, {icon: item.icon})
+                .bindPopup(popupContent)
+                .addTo(map);
 
-# Group for Transit Driving Routes
-routes_group = folium.FeatureGroup(name="Driving Routes & Transit Lines", show=True)
-
-# Plot markers and routes
-for loc in destinations:
-    html_popup = f"""
-    <div style="font-family: Arial, sans-serif; min-width: 200px;">
-        <h4 style="margin: 0 0 5px 0; color: #2C3E50;">{loc['name']}</h4>
-        <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">
-            <b>{loc['category']}</b>
-        </p>
-        <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">
-        <p style="margin: 0 0 4px 0; font-size: 12px; color: #16A085;">
-            ⏱ <b>Transit Time:</b> {loc['drive_time']}
-        </p>
-        {'<p style="margin: 0; font-size: 11px; color: #34495E;">🗺️ ' + loc.get('route_info', '') + '</p>' if loc.get('route_info') else ''}
-    </div>
-    """
-
-    marker = folium.Marker(
-        location=loc["coords"],
-        popup=folium.Popup(html_popup, max_width=280),
-        tooltip=f"{loc['name']} ({loc['drive_time']})",
-        icon=folium.Icon(color=loc["color"], icon=loc["icon"], prefix="fa"),
-    )
-    categories[loc["category"]].add_child(marker)
-
-    # Draw Driving Polyline Route if path exists
-    if loc["route_path"]:
-        polyline = folium.PolyLine(
-            locations=loc["route_path"],
-            color=loc["color"],
-            weight=4,
-            opacity=0.7,
-            dash_array="6, 8",
-            tooltip=f"Route to {loc['name']} ({loc['drive_time']})",
-        )
-        routes_group.add_child(polyline)
-
-# Add feature groups to map
-for group in categories.values():
-    m.add_child(group)
-m.add_child(routes_group)
-
-folium.LayerControl(collapsed=False).add_to(m)
-
-# Floating Legend
-legend_html = """
-<div style="
-    position: fixed; 
-    bottom: 30px; left: 30px; width: 240px; height: 210px; 
-    background-color: white; border:2px solid #bdc3c7; z-index:9999; 
-    font-size:12px; padding: 12px; border-radius: 8px; box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-    font-family: Arial, sans-serif;
-">
-    <b style="font-size: 13px;">Excursion & Route Legend</b><br><br>
-    <i class="fa fa-circle" style="color:red"></i>&nbsp; Host Hotels (Origin)<br>
-    <i class="fa fa-circle" style="color:blue"></i>&nbsp; Water & Harbors<br>
-    <i class="fa fa-circle" style="color:green"></i>&nbsp; Land & Cultural<br>
-    <i class="fa fa-circle" style="color:purple"></i>&nbsp; Adventure Hubs<br>
-    <i class="fa fa-circle" style="color:orange"></i>&nbsp; CSR / Give-Back Sites<br>
-    <span style="color:#7f8c8d;"><b>----</b> Driving Route Paths</span>
-</div>
-"""
-m.get_root().html.add_child(Element(legend_html))
-
-# Save output to HTML file
-m.save("hawaii_incentive_logistics_map.html")
-print("Map successfully generated with driving routes: hawaii_incentive_logistics_map.html")
+            if (item.route) {
+                L.polyline(item.route, {color: '#34495E', weight: 4, opacity: 0.7, dashArray: '6,8'}).addTo(map);
+            }
+        });
+    </script>
+</body>
+</html>
