@@ -1,906 +1,273 @@
-<!DOCTYPE html>
-<html>
-<head>
-    
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    
-            <meta name="viewport" content="width=device-width,
-                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-            <style>
-                #map_13604350b88fbe88b1b6a13a672486da {
-                    position: relative;
-                    width: 100.0%;
-                    height: 100.0%;
-                    left: 0.0%;
-                    top: 0.0%;
-                }
-                .leaflet-container { font-size: 1rem; }
-            </style>
+import folium
+from folium import Element
 
-            <style>html, body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            </style>
+# Base Coordinates centered between Mauna Lani & South Kohala Coast
+MAP_CENTER = [19.8900, -155.7800]
+ZOOM_START = 10
 
-            <style>#map {
-                position:absolute;
-                top:0;
-                bottom:0;
-                right:0;
-                left:0;
-                }
-            </style>
+# Initialize Folium Map (Using OpenStreetMap to avoid API key watermarks)
+m = folium.Map(
+    location=MAP_CENTER,
+    zoom_start=ZOOM_START,
+    tiles="OpenStreetMap",
+    control_scale=True,
+)
 
-            <script>
-                L_NO_TOUCH = false;
-                L_DISABLE_3D = false;
-            </script>
+# Host Hotels Origin Point
+HOTEL_COORDS = [19.9532, -155.8673]  # Central Mauna Lani / Fairmont Hub
 
-        
-</head>
-<body>
-    
-    
+# Spatial Dataset: Incentive Program Destinations
+destinations = [
+    # 1. HOST HOTELS (Red)
+    {
+        "name": "Fairmont Orchid",
+        "category": "Host Hotel",
+        "coords": [19.9576, -155.8643],
+        "drive_time": "Origin Point (0 min)",
+        "color": "red",
+        "icon": "hotel",
+        "route_path": None,
+    },
+    {
+        "name": "Mauna Lani, Auberge Resorts Collection",
+        "category": "Host Hotel",
+        "coords": [19.9489, -155.8703],
+        "drive_time": "Origin Point (0 min)",
+        "color": "red",
+        "icon": "hotel",
+        "route_path": None,
+    },
+    # 2. WATER EXCURSIONS & HARBORS (Blue)
+    {
+        "name": "Anaehoʻomalu Bay (A-Bay)",
+        "category": "Water Excursion",
+        "coords": [19.9150, -155.8893],
+        "drive_time": "10 min drive (6.2 mi)",
+        "route_info": "Route: Hwy 19 South → Waikōloa Beach Dr",
+        "color": "blue",
+        "icon": "anchor",
+        "route_path": [HOTEL_COORDS, [19.9320, -155.8650], [19.9150, -155.8893]],
+    },
+    {
+        "name": "Kawaihae Harbor (South)",
+        "category": "Water Excursion",
+        "coords": [20.0360, -155.8290],
+        "drive_time": "15 min drive (9.8 mi)",
+        "route_info": "Route: Hwy 19 North (Queen Kaʻahumanu Hwy)",
+        "color": "blue",
+        "icon": "ship",
+        "route_path": [HOTEL_COORDS, [19.9800, -155.8450], [20.0360, -155.8290]],
+    },
+    {
+        "name": "Honokōhau Harbor / Kailua Pier",
+        "category": "Water Excursion",
+        "coords": [19.6708, -156.0245],
+        "drive_time": "45–50 min drive (26.5 mi)",
+        "route_info": "Route: Hwy 19 South past KOA Airport → Kealakehe Pkwy",
+        "color": "blue",
+        "icon": "ship",
+        "route_path": [
+            HOTEL_COORDS,
+            [19.8569, -155.9234],
+            [19.7289, -156.0578],
+            [19.6708, -156.0245],
+        ],
+    },
+    {
+        "name": "Keauhou Bay (Fair Wind Cruises)",
+        "category": "Water Excursion",
+        "coords": [19.5593, -155.9632],
+        "drive_time": "65 min drive (35.1 mi)",
+        "route_info": "Route: Hwy 19 South → Kuakini Hwy → Kamehameha III Rd",
+        "color": "blue",
+        "icon": "life-ring",
+        "route_path": [
+            HOTEL_COORDS,
+            [19.8569, -155.9234],
+            [19.6397, -155.9946],
+            [19.5593, -155.9632],
+        ],
+    },
+    # 3. LAND & CULTURAL EXCURSIONS (Green)
+    {
+        "name": "Kona Sea Salt & Ocean Rider Seahorse Farm",
+        "category": "Land Excursion",
+        "coords": [19.7289, -156.0578],
+        "drive_time": "30 min drive (20.1 mi)",
+        "route_info": "Route: Hwy 19 South → Makako Bay Dr (NELHA)",
+        "color": "green",
+        "icon": "leaf",
+        "route_path": [HOTEL_COORDS, [19.8569, -155.9234], [19.7289, -156.0578]],
+    },
+    {
+        "name": "Kailua-Kona Town / Huliheʻe Palace / Aliʻi Dr",
+        "category": "Land Excursion",
+        "coords": [19.6397, -155.9946],
+        "drive_time": "45–50 min drive (28.4 mi)",
+        "route_info": "Route: Hwy 19 South → Palani Rd → Aliʻi Dr",
+        "color": "green",
+        "icon": "landmark",
+        "route_path": [HOTEL_COORDS, [19.8569, -155.9234], [19.6397, -155.9946]],
+    },
+    {
+        "name": "Waimea / Anna Ranch / Parker Ranch",
+        "category": "Land Excursion",
+        "coords": [20.0225, -155.6664],
+        "drive_time": "25–30 min drive (18.5 mi)",
+        "route_info": "Route: Hwy 19 North → Kawaihae Rd (Hwy 19 Mauka)",
+        "color": "green",
+        "icon": "tree",
+        "route_path": [HOTEL_COORDS, [20.0360, -155.8290], [20.0225, -155.6664]],
+    },
+    {
+        "name": "Hāmākua / Hawaiian Vanilla Company",
+        "category": "Land Excursion",
+        "coords": [20.0465, -155.3725],
+        "drive_time": "65–70 min drive (42.0 mi)",
+        "route_info": "Route: Hwy 19 North → Waimea → Hwy 19 East (Hāmākua Coast)",
+        "color": "green",
+        "icon": "seedling",
+        "route_path": [
+            HOTEL_COORDS,
+            [20.0225, -155.6664],
+            [20.0150, -155.4050],
+            [20.0465, -155.3725],
+        ],
+    },
+    # 4. ADVENTURE EXCURSIONS (Purple)
+    {
+        "name": "Kahua Ranch",
+        "category": "Adventure Excursion",
+        "coords": [20.1265, -155.7876],
+        "drive_time": "40–45 min drive (24.2 mi)",
+        "route_info": "Route: Hwy 19 North → Kawaihae → Kohala Mtn Rd (Hwy 250)",
+        "color": "purple",
+        "icon": "compass",
+        "route_path": [HOTEL_COORDS, [20.0360, -155.8290], [20.1265, -155.7876]],
+    },
+    {
+        "name": "North Kohala Adventure Hub (Hāwī)",
+        "category": "Adventure Excursion",
+        "coords": [20.2405, -155.8340],
+        "drive_time": "50 min drive (32.1 mi)",
+        "route_info": "Route: Hwy 19 North → Akoni Pule Hwy (Hwy 270)",
+        "color": "purple",
+        "icon": "bicycle",
+        "route_path": [
+            HOTEL_COORDS,
+            [20.0360, -155.8290],
+            [20.1265, -155.7876],
+            [20.2405, -155.8340],
+        ],
+    },
+    # 5. CSR / GIVE-BACK SITES (Orange)
+    {
+        "name": "Waikōloa Dry Forest Initiative",
+        "category": "CSR / Give-Back",
+        "coords": [19.9360, -155.7925],
+        "drive_time": "20–25 min drive (12.4 mi)",
+        "route_info": "Route: Hwy 19 South → Waikōloa Rd Mauka",
+        "color": "orange",
+        "icon": "heart",
+        "route_path": [HOTEL_COORDS, [19.9320, -155.8650], [19.9360, -155.7925]],
+    },
+    {
+        "name": "Kīholo Bay / Kīholo Fishpond",
+        "category": "CSR / Give-Back",
+        "coords": [19.8569, -155.9234],
+        "drive_time": "15–20 min drive (11.8 mi)",
+        "route_info": "Route: Hwy 19 South → Kīholo Bay 4WD Turnoff",
+        "color": "orange",
+        "icon": "handshake",
+        "route_path": [HOTEL_COORDS, [19.8569, -155.9234]],
+    },
+    {
+        "name": "Hawaiian Legacy Reforestation Initiative",
+        "category": "CSR / Give-Back",
+        "coords": [20.0150, -155.4050],
+        "drive_time": "65 min drive (38.5 mi)",
+        "route_info": "Route: Hwy 19 North → Waimea → Hwy 19 East",
+        "color": "orange",
+        "icon": "globe",
+        "route_path": [HOTEL_COORDS, [20.0225, -155.6664], [20.0150, -155.4050]],
+    },
+]
+
+# Create FeatureGroups for categorized layer toggling
+categories = {
+    "Host Hotel": folium.FeatureGroup(name="Host Hotels (Red)"),
+    "Water Excursion": folium.FeatureGroup(name="Water & Harbors (Blue)"),
+    "Land Excursion": folium.FeatureGroup(name="Land & Culture (Green)"),
+    "Adventure Excursion": folium.FeatureGroup(name="Adventure (Purple)"),
+    "CSR / Give-Back": folium.FeatureGroup(name="CSR / Community (Orange)"),
+}
+
+# Group for Transit Driving Routes
+routes_group = folium.FeatureGroup(name="Driving Routes & Transit Lines", show=True)
+
+# Plot markers and routes
+for loc in destinations:
+    html_popup = f"""
+    <div style="font-family: Arial, sans-serif; min-width: 200px;">
+        <h4 style="margin: 0 0 5px 0; color: #2C3E50;">{loc['name']}</h4>
+        <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">
+            <b>{loc['category']}</b>
+        </p>
+        <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">
+        <p style="margin: 0 0 4px 0; font-size: 12px; color: #16A085;">
+            ⏱ <b>Transit Time:</b> {loc['drive_time']}
+        </p>
+        {'<p style="margin: 0; font-size: 11px; color: #34495E;">🗺️ ' + loc.get('route_info', '') + '</p>' if loc.get('route_info') else ''}
+    </div>
+    """
+
+    marker = folium.Marker(
+        location=loc["coords"],
+        popup=folium.Popup(html_popup, max_width=280),
+        tooltip=f"{loc['name']} ({loc['drive_time']})",
+        icon=folium.Icon(color=loc["color"], icon=loc["icon"], prefix="fa"),
+    )
+    categories[loc["category"]].add_child(marker)
+
+    # Draw Driving Polyline Route if path exists
+    if loc["route_path"]:
+        polyline = folium.PolyLine(
+            locations=loc["route_path"],
+            color=loc["color"],
+            weight=4,
+            opacity=0.7,
+            dash_array="6, 8",
+            tooltip=f"Route to {loc['name']} ({loc['drive_time']})",
+        )
+        routes_group.add_child(polyline)
+
+# Add feature groups to map
+for group in categories.values():
+    m.add_child(group)
+m.add_child(routes_group)
+
+folium.LayerControl(collapsed=False).add_to(m)
+
+# Floating Legend
+legend_html = """
 <div style="
     position: fixed; 
-    bottom: 30px; left: 30px; width: 230px; height: 195px; 
+    bottom: 30px; left: 30px; width: 240px; height: 210px; 
     background-color: white; border:2px solid #bdc3c7; z-index:9999; 
     font-size:12px; padding: 12px; border-radius: 8px; box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
     font-family: Arial, sans-serif;
 ">
-    <b style="font-size: 13px;">Excursion Categories</b><br><br>
+    <b style="font-size: 13px;">Excursion & Route Legend</b><br><br>
     <i class="fa fa-circle" style="color:red"></i>&nbsp; Host Hotels (Origin)<br>
     <i class="fa fa-circle" style="color:blue"></i>&nbsp; Water & Harbors<br>
     <i class="fa fa-circle" style="color:green"></i>&nbsp; Land & Cultural<br>
     <i class="fa fa-circle" style="color:purple"></i>&nbsp; Adventure Hubs<br>
     <i class="fa fa-circle" style="color:orange"></i>&nbsp; CSR / Give-Back Sites<br>
+    <span style="color:#7f8c8d;"><b>----</b> Driving Route Paths</span>
 </div>
-    
-            <div class="folium-map" id="map_13604350b88fbe88b1b6a13a672486da" ></div>
-        
-</body>
-<script>
-    
-    
-            var map_13604350b88fbe88b1b6a13a672486da = L.map(
-                "map_13604350b88fbe88b1b6a13a672486da",
-                {
-                    center: [19.89, -155.78],
-                    crs: L.CRS.EPSG3857,
-                    ...{
-  "zoom": 10,
-  "zoomControl": true,
-  "preferCanvas": false,
-}
+"""
+m.get_root().html.add_child(Element(legend_html))
 
-                }
-            );
-            L.control.scale().addTo(map_13604350b88fbe88b1b6a13a672486da);
-
-            
-
-        
-    
-            var tile_layer_3ea10b7b5837631f3978d65cb61d3870 = L.tileLayer(
-                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                {
-  "minZoom": 0,
-  "maxZoom": 19,
-  "maxNativeZoom": 19,
-  "noWrap": false,
-  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
-  "subdomains": "abc",
-  "detectRetina": false,
-  "tms": false,
-  "opacity": 1,
-}
-
-            );
-        
-    
-            tile_layer_3ea10b7b5837631f3978d65cb61d3870.addTo(map_13604350b88fbe88b1b6a13a672486da);
-        
-    
-            var feature_group_da870b486f28733aa1bef6264ff3ef0d = L.featureGroup(
-                {
-}
-            );
-        
-    
-            var marker_99f270659def1503685d8edcbd70d45b = L.marker(
-                [19.9576, -155.8643],
-                {
-}
-            ).addTo(feature_group_da870b486f28733aa1bef6264ff3ef0d);
-        
-    
-            var icon_bda93b89d633def3c68046570365704b = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "red",
-  "iconColor": "white",
-  "icon": "hotel",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_3c372b832b7ae1a3c580005d8118848f = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_6422b19dab25125e6ffa07e009029fff = $(`<div id="html_6422b19dab25125e6ffa07e009029fff" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Fairmont Orchid</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Host Hotel</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> Origin Point (0 min)         </p>     </div>     </div>`)[0];
-                popup_3c372b832b7ae1a3c580005d8118848f.setContent(html_6422b19dab25125e6ffa07e009029fff);
-            
-        
-
-        marker_99f270659def1503685d8edcbd70d45b.bindPopup(popup_3c372b832b7ae1a3c580005d8118848f)
-        ;
-
-        
-    
-    
-            marker_99f270659def1503685d8edcbd70d45b.bindTooltip(
-                `<div>
-                     Fairmont Orchid (Origin Point (0 min))
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_99f270659def1503685d8edcbd70d45b.setIcon(icon_bda93b89d633def3c68046570365704b);
-            
-    
-            var marker_66c5329a75b98a47ae37164bd08d31c8 = L.marker(
-                [19.9489, -155.8703],
-                {
-}
-            ).addTo(feature_group_da870b486f28733aa1bef6264ff3ef0d);
-        
-    
-            var icon_8bd518f1b4b6a3c73b1492e4c956fab3 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "red",
-  "iconColor": "white",
-  "icon": "hotel",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_3babc15ea72f5993796f135574172514 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_b1b96f4ad57ab80bbb920fdacac17797 = $(`<div id="html_b1b96f4ad57ab80bbb920fdacac17797" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Mauna Lani, Auberge Resorts Collection</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Host Hotel</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> Origin Point (0 min)         </p>     </div>     </div>`)[0];
-                popup_3babc15ea72f5993796f135574172514.setContent(html_b1b96f4ad57ab80bbb920fdacac17797);
-            
-        
-
-        marker_66c5329a75b98a47ae37164bd08d31c8.bindPopup(popup_3babc15ea72f5993796f135574172514)
-        ;
-
-        
-    
-    
-            marker_66c5329a75b98a47ae37164bd08d31c8.bindTooltip(
-                `<div>
-                     Mauna Lani, Auberge Resorts Collection (Origin Point (0 min))
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_66c5329a75b98a47ae37164bd08d31c8.setIcon(icon_8bd518f1b4b6a3c73b1492e4c956fab3);
-            
-    
-            feature_group_da870b486f28733aa1bef6264ff3ef0d.addTo(map_13604350b88fbe88b1b6a13a672486da);
-        
-    
-            var feature_group_414495f2853cc9b0bb97e9d99ff4f595 = L.featureGroup(
-                {
-}
-            );
-        
-    
-            var marker_45744186bc7f07792fc7abe9d55896d2 = L.marker(
-                [19.915, -155.8893],
-                {
-}
-            ).addTo(feature_group_414495f2853cc9b0bb97e9d99ff4f595);
-        
-    
-            var icon_b4fe5c710fb44c925b69ad659dc22a74 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "blue",
-  "iconColor": "white",
-  "icon": "anchor",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_dba93301a4db88e3b5ee1b2b616bc5a4 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_360aaf2ffa3bcb813fbb42ea7dc44ad6 = $(`<div id="html_360aaf2ffa3bcb813fbb42ea7dc44ad6" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Anaehoʻomalu Bay (A-Bay)</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Water Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 10 min drive         </p>     </div>     </div>`)[0];
-                popup_dba93301a4db88e3b5ee1b2b616bc5a4.setContent(html_360aaf2ffa3bcb813fbb42ea7dc44ad6);
-            
-        
-
-        marker_45744186bc7f07792fc7abe9d55896d2.bindPopup(popup_dba93301a4db88e3b5ee1b2b616bc5a4)
-        ;
-
-        
-    
-    
-            marker_45744186bc7f07792fc7abe9d55896d2.bindTooltip(
-                `<div>
-                     Anaehoʻomalu Bay (A-Bay) (10 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_45744186bc7f07792fc7abe9d55896d2.setIcon(icon_b4fe5c710fb44c925b69ad659dc22a74);
-            
-    
-            var marker_1625ef7eb75ae3484c2be18779b5a5c0 = L.marker(
-                [20.036, -155.829],
-                {
-}
-            ).addTo(feature_group_414495f2853cc9b0bb97e9d99ff4f595);
-        
-    
-            var icon_0f4c1c3d4097ab20be63253a3c56190c = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "blue",
-  "iconColor": "white",
-  "icon": "ship",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_cdb536bc21dc994949f667a2a5fb7119 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_e74875290b056105a9ddb864f547f3b6 = $(`<div id="html_e74875290b056105a9ddb864f547f3b6" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Kawaihae Harbor (South)</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Water Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 15 min drive         </p>     </div>     </div>`)[0];
-                popup_cdb536bc21dc994949f667a2a5fb7119.setContent(html_e74875290b056105a9ddb864f547f3b6);
-            
-        
-
-        marker_1625ef7eb75ae3484c2be18779b5a5c0.bindPopup(popup_cdb536bc21dc994949f667a2a5fb7119)
-        ;
-
-        
-    
-    
-            marker_1625ef7eb75ae3484c2be18779b5a5c0.bindTooltip(
-                `<div>
-                     Kawaihae Harbor (South) (15 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_1625ef7eb75ae3484c2be18779b5a5c0.setIcon(icon_0f4c1c3d4097ab20be63253a3c56190c);
-            
-    
-            var marker_51e5d28f42f7e952873a5be7d0c8e991 = L.marker(
-                [19.6708, -156.0245],
-                {
-}
-            ).addTo(feature_group_414495f2853cc9b0bb97e9d99ff4f595);
-        
-    
-            var icon_5d982e17c39eb06c9f03ad2857f5f0c8 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "blue",
-  "iconColor": "white",
-  "icon": "ship",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_6d266de8a96bb6b6e274b47c02633ad1 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_abf8be7f137a1a706dbd639bba920aec = $(`<div id="html_abf8be7f137a1a706dbd639bba920aec" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Honokōhau Harbor / Kailua Pier</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Water Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 45–50 min drive         </p>     </div>     </div>`)[0];
-                popup_6d266de8a96bb6b6e274b47c02633ad1.setContent(html_abf8be7f137a1a706dbd639bba920aec);
-            
-        
-
-        marker_51e5d28f42f7e952873a5be7d0c8e991.bindPopup(popup_6d266de8a96bb6b6e274b47c02633ad1)
-        ;
-
-        
-    
-    
-            marker_51e5d28f42f7e952873a5be7d0c8e991.bindTooltip(
-                `<div>
-                     Honokōhau Harbor / Kailua Pier (45–50 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_51e5d28f42f7e952873a5be7d0c8e991.setIcon(icon_5d982e17c39eb06c9f03ad2857f5f0c8);
-            
-    
-            var marker_3aebb43ac76e631e55cf9679291559d6 = L.marker(
-                [19.5593, -155.9632],
-                {
-}
-            ).addTo(feature_group_414495f2853cc9b0bb97e9d99ff4f595);
-        
-    
-            var icon_a29bde397ebb5833622bb79c11fec858 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "blue",
-  "iconColor": "white",
-  "icon": "life-ring",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_8d5c4b3946a0dd43a154825a33457202 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_43e360ccc4cb3d1f909a0eedd78aa8c2 = $(`<div id="html_43e360ccc4cb3d1f909a0eedd78aa8c2" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Keauhou Bay (Fair Wind Cruises)</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Water Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 65 min drive         </p>     </div>     </div>`)[0];
-                popup_8d5c4b3946a0dd43a154825a33457202.setContent(html_43e360ccc4cb3d1f909a0eedd78aa8c2);
-            
-        
-
-        marker_3aebb43ac76e631e55cf9679291559d6.bindPopup(popup_8d5c4b3946a0dd43a154825a33457202)
-        ;
-
-        
-    
-    
-            marker_3aebb43ac76e631e55cf9679291559d6.bindTooltip(
-                `<div>
-                     Keauhou Bay (Fair Wind Cruises) (65 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_3aebb43ac76e631e55cf9679291559d6.setIcon(icon_a29bde397ebb5833622bb79c11fec858);
-            
-    
-            feature_group_414495f2853cc9b0bb97e9d99ff4f595.addTo(map_13604350b88fbe88b1b6a13a672486da);
-        
-    
-            var feature_group_058d8ac46c0d8e8a018f9bddccdf653a = L.featureGroup(
-                {
-}
-            );
-        
-    
-            var marker_6e18c0c0539b042f8263e71439a303f3 = L.marker(
-                [19.7289, -156.0578],
-                {
-}
-            ).addTo(feature_group_058d8ac46c0d8e8a018f9bddccdf653a);
-        
-    
-            var icon_1d5d18adf132d38dee5935de7b6267c8 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "green",
-  "iconColor": "white",
-  "icon": "leaf",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_eff2f1ab9633204bf9185546d37591f4 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_ce3e1a1bc2f69305f5a5a7605cb680a3 = $(`<div id="html_ce3e1a1bc2f69305f5a5a7605cb680a3" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Kona Sea Salt & Ocean Rider Seahorse Farm</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Land Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 30 min drive         </p>     </div>     </div>`)[0];
-                popup_eff2f1ab9633204bf9185546d37591f4.setContent(html_ce3e1a1bc2f69305f5a5a7605cb680a3);
-            
-        
-
-        marker_6e18c0c0539b042f8263e71439a303f3.bindPopup(popup_eff2f1ab9633204bf9185546d37591f4)
-        ;
-
-        
-    
-    
-            marker_6e18c0c0539b042f8263e71439a303f3.bindTooltip(
-                `<div>
-                     Kona Sea Salt & Ocean Rider Seahorse Farm (30 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_6e18c0c0539b042f8263e71439a303f3.setIcon(icon_1d5d18adf132d38dee5935de7b6267c8);
-            
-    
-            var marker_bf75815ac19e2dbd02856e4cd677dbaf = L.marker(
-                [19.6397, -155.9946],
-                {
-}
-            ).addTo(feature_group_058d8ac46c0d8e8a018f9bddccdf653a);
-        
-    
-            var icon_b0978a87e7403e12e07c45fecd200019 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "green",
-  "iconColor": "white",
-  "icon": "landmark",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_403e42b0af32322fe156183b5bf0066d = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_ecc323a1a6c26f28b02994a41a414633 = $(`<div id="html_ecc323a1a6c26f28b02994a41a414633" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Kailua-Kona Town / Huliheʻe Palace / Aliʻi Dr</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Land Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 45–50 min drive         </p>     </div>     </div>`)[0];
-                popup_403e42b0af32322fe156183b5bf0066d.setContent(html_ecc323a1a6c26f28b02994a41a414633);
-            
-        
-
-        marker_bf75815ac19e2dbd02856e4cd677dbaf.bindPopup(popup_403e42b0af32322fe156183b5bf0066d)
-        ;
-
-        
-    
-    
-            marker_bf75815ac19e2dbd02856e4cd677dbaf.bindTooltip(
-                `<div>
-                     Kailua-Kona Town / Huliheʻe Palace / Aliʻi Dr (45–50 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_bf75815ac19e2dbd02856e4cd677dbaf.setIcon(icon_b0978a87e7403e12e07c45fecd200019);
-            
-    
-            var marker_5587306735387d4ad6cef0c458d2802b = L.marker(
-                [20.0225, -155.6664],
-                {
-}
-            ).addTo(feature_group_058d8ac46c0d8e8a018f9bddccdf653a);
-        
-    
-            var icon_81ed5a173cbd228e66565bedf0e1cfc4 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "green",
-  "iconColor": "white",
-  "icon": "tree",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_35ad1fd6b76404b589de6f7d34315ee2 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_05c777636d0ab17ae4ebe818866df03a = $(`<div id="html_05c777636d0ab17ae4ebe818866df03a" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Waimea / Anna Ranch / Parker Ranch</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Land Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 25–30 min drive         </p>     </div>     </div>`)[0];
-                popup_35ad1fd6b76404b589de6f7d34315ee2.setContent(html_05c777636d0ab17ae4ebe818866df03a);
-            
-        
-
-        marker_5587306735387d4ad6cef0c458d2802b.bindPopup(popup_35ad1fd6b76404b589de6f7d34315ee2)
-        ;
-
-        
-    
-    
-            marker_5587306735387d4ad6cef0c458d2802b.bindTooltip(
-                `<div>
-                     Waimea / Anna Ranch / Parker Ranch (25–30 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_5587306735387d4ad6cef0c458d2802b.setIcon(icon_81ed5a173cbd228e66565bedf0e1cfc4);
-            
-    
-            var marker_cbc5205548415b587f28bcf09277f33d = L.marker(
-                [20.0465, -155.3725],
-                {
-}
-            ).addTo(feature_group_058d8ac46c0d8e8a018f9bddccdf653a);
-        
-    
-            var icon_b24644e46114bf34b971be0c6a69355b = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "green",
-  "iconColor": "white",
-  "icon": "seedling",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_a4f224576d93831bbc17d696e2ddd9c4 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_4159405101a8a58443ed326f85c53add = $(`<div id="html_4159405101a8a58443ed326f85c53add" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Hāmākua / Hawaiian Vanilla Company</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Land Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 65–70 min drive         </p>     </div>     </div>`)[0];
-                popup_a4f224576d93831bbc17d696e2ddd9c4.setContent(html_4159405101a8a58443ed326f85c53add);
-            
-        
-
-        marker_cbc5205548415b587f28bcf09277f33d.bindPopup(popup_a4f224576d93831bbc17d696e2ddd9c4)
-        ;
-
-        
-    
-    
-            marker_cbc5205548415b587f28bcf09277f33d.bindTooltip(
-                `<div>
-                     Hāmākua / Hawaiian Vanilla Company (65–70 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_cbc5205548415b587f28bcf09277f33d.setIcon(icon_b24644e46114bf34b971be0c6a69355b);
-            
-    
-            feature_group_058d8ac46c0d8e8a018f9bddccdf653a.addTo(map_13604350b88fbe88b1b6a13a672486da);
-        
-    
-            var feature_group_e8364c0e74d6c1683adfa9677b36f5b8 = L.featureGroup(
-                {
-}
-            );
-        
-    
-            var marker_2e28d49e41777f414b14897e6145807f = L.marker(
-                [20.1265, -155.7876],
-                {
-}
-            ).addTo(feature_group_e8364c0e74d6c1683adfa9677b36f5b8);
-        
-    
-            var icon_f3c586c6872300dcb4e7c1ddbebe5348 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "purple",
-  "iconColor": "white",
-  "icon": "compass",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_239f968c832307707371f84f45517cff = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_cecfc560ad1212072c38803c21437623 = $(`<div id="html_cecfc560ad1212072c38803c21437623" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Kahua Ranch</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Adventure Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 40–45 min drive         </p>     </div>     </div>`)[0];
-                popup_239f968c832307707371f84f45517cff.setContent(html_cecfc560ad1212072c38803c21437623);
-            
-        
-
-        marker_2e28d49e41777f414b14897e6145807f.bindPopup(popup_239f968c832307707371f84f45517cff)
-        ;
-
-        
-    
-    
-            marker_2e28d49e41777f414b14897e6145807f.bindTooltip(
-                `<div>
-                     Kahua Ranch (40–45 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_2e28d49e41777f414b14897e6145807f.setIcon(icon_f3c586c6872300dcb4e7c1ddbebe5348);
-            
-    
-            var marker_a7f45b80150acc4a85a3deea408cd24c = L.marker(
-                [20.2405, -155.834],
-                {
-}
-            ).addTo(feature_group_e8364c0e74d6c1683adfa9677b36f5b8);
-        
-    
-            var icon_1dd08504605b46433a63f98ffff01864 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "purple",
-  "iconColor": "white",
-  "icon": "bicycle",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_1d1834bf0f9001424943ca0e30323e52 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_f894cb6023b992a708b8f3f791e77327 = $(`<div id="html_f894cb6023b992a708b8f3f791e77327" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">North Kohala Adventure Hub (Hāwī)</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>Adventure Excursion</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 50 min drive         </p>     </div>     </div>`)[0];
-                popup_1d1834bf0f9001424943ca0e30323e52.setContent(html_f894cb6023b992a708b8f3f791e77327);
-            
-        
-
-        marker_a7f45b80150acc4a85a3deea408cd24c.bindPopup(popup_1d1834bf0f9001424943ca0e30323e52)
-        ;
-
-        
-    
-    
-            marker_a7f45b80150acc4a85a3deea408cd24c.bindTooltip(
-                `<div>
-                     North Kohala Adventure Hub (Hāwī) (50 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_a7f45b80150acc4a85a3deea408cd24c.setIcon(icon_1dd08504605b46433a63f98ffff01864);
-            
-    
-            feature_group_e8364c0e74d6c1683adfa9677b36f5b8.addTo(map_13604350b88fbe88b1b6a13a672486da);
-        
-    
-            var feature_group_8ea1aa35aeb10f958f90f8241947d721 = L.featureGroup(
-                {
-}
-            );
-        
-    
-            var marker_05892bbaa19537bc3306c111b120ee8f = L.marker(
-                [19.936, -155.7925],
-                {
-}
-            ).addTo(feature_group_8ea1aa35aeb10f958f90f8241947d721);
-        
-    
-            var icon_eb5c0dde6a8dece226798421d15862a6 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "orange",
-  "iconColor": "white",
-  "icon": "heart",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_dffa0c4c529822a9d1ccecf228246b84 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_03ba3c76dadc828ad7e47f886be3bc62 = $(`<div id="html_03ba3c76dadc828ad7e47f886be3bc62" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Waikōloa Dry Forest Initiative</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>CSR / Give-Back</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 20–25 min drive         </p>     </div>     </div>`)[0];
-                popup_dffa0c4c529822a9d1ccecf228246b84.setContent(html_03ba3c76dadc828ad7e47f886be3bc62);
-            
-        
-
-        marker_05892bbaa19537bc3306c111b120ee8f.bindPopup(popup_dffa0c4c529822a9d1ccecf228246b84)
-        ;
-
-        
-    
-    
-            marker_05892bbaa19537bc3306c111b120ee8f.bindTooltip(
-                `<div>
-                     Waikōloa Dry Forest Initiative (20–25 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_05892bbaa19537bc3306c111b120ee8f.setIcon(icon_eb5c0dde6a8dece226798421d15862a6);
-            
-    
-            var marker_8464a5e70474e3ae17556ed6c42627e8 = L.marker(
-                [19.8569, -155.9234],
-                {
-}
-            ).addTo(feature_group_8ea1aa35aeb10f958f90f8241947d721);
-        
-    
-            var icon_3b22e1cf61c4e590c892e3b37d873d60 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "orange",
-  "iconColor": "white",
-  "icon": "handshake",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_0ff8a10a3876ce1477619cabd495e766 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_ca14c722600e5debf848cff42a3b126d = $(`<div id="html_ca14c722600e5debf848cff42a3b126d" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Kīholo Bay / Kīholo Fishpond</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>CSR / Give-Back</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 15–20 min drive         </p>     </div>     </div>`)[0];
-                popup_0ff8a10a3876ce1477619cabd495e766.setContent(html_ca14c722600e5debf848cff42a3b126d);
-            
-        
-
-        marker_8464a5e70474e3ae17556ed6c42627e8.bindPopup(popup_0ff8a10a3876ce1477619cabd495e766)
-        ;
-
-        
-    
-    
-            marker_8464a5e70474e3ae17556ed6c42627e8.bindTooltip(
-                `<div>
-                     Kīholo Bay / Kīholo Fishpond (15–20 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_8464a5e70474e3ae17556ed6c42627e8.setIcon(icon_3b22e1cf61c4e590c892e3b37d873d60);
-            
-    
-            var marker_bbd92f3174edc11a3d690ddb9a85a172 = L.marker(
-                [20.015, -155.405],
-                {
-}
-            ).addTo(feature_group_8ea1aa35aeb10f958f90f8241947d721);
-        
-    
-            var icon_e79d8e49ad7cb8865fc85ddc374b6a19 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "orange",
-  "iconColor": "white",
-  "icon": "globe",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_21236998e3fe622d8172ab7bfbaa1667 = L.popup({
-  "maxWidth": 260,
-});
-
-        
-            
-                var html_9641d09ec580228254156a8f27356d3c = $(`<div id="html_9641d09ec580228254156a8f27356d3c" style="width: 100.0%; height: 100.0%;">     <div style="font-family: Arial, sans-serif; min-width: 180px;">         <h4 style="margin: 0 0 5px 0; color: #2C3E50;">Hawaiian Legacy Reforestation Initiative</h4>         <p style="margin: 0 0 3px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #7F8C8D;">             <b>CSR / Give-Back</b>         </p>         <hr style="border: 0; border-top: 1px solid #ECF0F1; margin: 6px 0;">         <p style="margin: 0; font-size: 12px; color: #16A085;">             ⏱ <b>Drive Time:</b> 65 min drive         </p>     </div>     </div>`)[0];
-                popup_21236998e3fe622d8172ab7bfbaa1667.setContent(html_9641d09ec580228254156a8f27356d3c);
-            
-        
-
-        marker_bbd92f3174edc11a3d690ddb9a85a172.bindPopup(popup_21236998e3fe622d8172ab7bfbaa1667)
-        ;
-
-        
-    
-    
-            marker_bbd92f3174edc11a3d690ddb9a85a172.bindTooltip(
-                `<div>
-                     Hawaiian Legacy Reforestation Initiative (65 min drive)
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_bbd92f3174edc11a3d690ddb9a85a172.setIcon(icon_e79d8e49ad7cb8865fc85ddc374b6a19);
-            
-    
-            feature_group_8ea1aa35aeb10f958f90f8241947d721.addTo(map_13604350b88fbe88b1b6a13a672486da);
-        
-    
-            var layer_control_96583ad3bf33bb5931534330abc98f36_layers = {
-                base_layers : {
-                    "openstreetmap" : tile_layer_3ea10b7b5837631f3978d65cb61d3870,
-                },
-                overlays :  {
-                    "Host Hotels (Red)" : feature_group_da870b486f28733aa1bef6264ff3ef0d,
-                    "Water \u0026 Harbors (Blue)" : feature_group_414495f2853cc9b0bb97e9d99ff4f595,
-                    "Land \u0026 Culture (Green)" : feature_group_058d8ac46c0d8e8a018f9bddccdf653a,
-                    "Adventure (Purple)" : feature_group_e8364c0e74d6c1683adfa9677b36f5b8,
-                    "CSR / Community (Orange)" : feature_group_8ea1aa35aeb10f958f90f8241947d721,
-                },
-            };
-            let layer_control_96583ad3bf33bb5931534330abc98f36 = L.control.layers(
-                layer_control_96583ad3bf33bb5931534330abc98f36_layers.base_layers,
-                layer_control_96583ad3bf33bb5931534330abc98f36_layers.overlays,
-                {
-  "position": "topright",
-  "collapsed": false,
-  "autoZIndex": true,
-}
-            ).addTo(map_13604350b88fbe88b1b6a13a672486da);
-
-        
-</script>
-</html>
+# Save output to HTML file
+m.save("hawaii_incentive_logistics_map.html")
+print("Map successfully generated with driving routes: hawaii_incentive_logistics_map.html")
